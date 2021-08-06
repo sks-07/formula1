@@ -26,7 +26,7 @@ class formula1:
                 print("NA"+"  "+ key['code'] +":  "+key['givenName'] + " " + key['familyName'])
 
 f=formula1()
-f.display(2010)
+f.last_result()
 
         
 
