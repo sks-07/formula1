@@ -37,6 +37,7 @@ class formula1:
         print("Pos\tNo\tDriver\t\t\tLaps\tPoints")
         for key in db['Results']:
             try:
+                print("{}\t{}\t{}\t\t{}\t{}".format(key['position'],key['number'],key['Driver']['givenName']+" " +key['Driver']['familyName'],key['laps'],key['Time']['time'],key['points'] ))
             except:
                 if key['status']=="Disqualified":
                     status="DQ"
