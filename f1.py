@@ -29,8 +29,18 @@ class formula1:
     def last_result(self):
         url = "http://ergast.com/api/f1/current/last/results.json"
         response = requests.request("GET", url, headers=self.headers, data=self.payload)
+        response2 = requests.request("GET", url2, headers=self.headers, data=self.payload)
         db = eval(response.text)
         db=db['MRData']['RaceTable']['Races'][0]
+        url2 = "http://ergast.com/api/f1/{}/{}/status.json".format(db['season'],db['round'])
+        response2 = requests.request("GET", url2, headers=self.headers, data=self.payload)
+        db2 = eval(response2.text)
+        db2=db2['MRData']['StatusTable']['Status']
+        a=[]
+        for key in db2:
+            if(key['status'][0]=='+'):pass
+            else:
+                a.append(key['status'])
         print("\nRound {} Forumla 1 season {} :".format(db['round'],db['season']))
         print(db['raceName'])
         print("At circuit {} ,{} {}".format(db['Circuit']['circuitName'],db['Circuit']['Location']['locality'],db['Circuit']['Location']['country']))
@@ -41,14 +51,63 @@ class formula1:
             try:
                 print("{:<8} {:<8} {:<20} {:<10} {:<15} {:<10}".format(key['position'],key['number'],key['Driver']['givenName']+" " +key['Driver']['familyName'],key['laps'],key['Time']['time'],key['points'] ))
             except:
+                flag=0
+            
+                for k in a:
+                    if k==key['status']:
+                        flag=1
+                        break
+                
                 if key['status']=="Disqualified":
                     status="DQ"
-                elif key['status']=='Collision':
-                    status="DNF"
-                else:
+                elif flag==0:
                     status=key['status']
+                elif flag==1:
+                    status="DNF"
                 print("{:<8} {:<8} {:<20} {:<10} {:<15} {:<10}".format(key['position'],key['number'],key['Driver']['givenName']+" " +key['Driver']['familyName'],key['laps'],status,key['points'] ))
+
+    def race_result(self,year,round):
+        url = "http://ergast.com/api/f1/{}/{}/results.json".format(year,round)
+        url2 = "http://ergast.com/api/f1/{}/{}/status.json".format(year,round)
+        response = requests.request("GET", url, headers=self.headers, data=self.payload)
+        response2 = requests.request("GET", url2, headers=self.headers, data=self.payload)
+        db = eval(response.text)
+        db2 = eval(response2.text)
+        db=db['MRData']['RaceTable']['Races'][0]
+        db2=db2['MRData']['StatusTable']['Status']
+        a=[]
+        for key in db2:
+            if(key['status'][0]=='+'):pass
+            else:
+                a.append(key['status'])
+
+        print("\nRound {} Forumla 1 season {} :".format(db['round'],db['season']))
+        print(db['raceName'])
+        print("At circuit {} ,{} {}".format(db['Circuit']['circuitName'],db['Circuit']['Location']['locality'],db['Circuit']['Location']['country']))
+        print("Date: {}  Time: {}".format(db['date'],db['time']))
+        print ("{:<8} {:<8} {:<20} {:<10} {:<15} {:<10}".format('Pos','No','Driver','Laps','Time','Points'))
+        print ("{:<8} {:<8} {:<20} {:<10} {:<15} {:<10}".format('---','--','------','----','----','------'))
+        for key in db['Results']:
+            try:
+                print("{:<8} {:<8} {:<20} {:<10} {:<15} {:<10}".format(key['position'],key['number'],key['Driver']['givenName']+" " +key['Driver']['familyName'],key['laps'],key['Time']['time'],key['points'] ))
+            except:
+                flag=0
+            
+                for k in a:
+                    if k==key['status']:
+                        flag=1
+                        break
                 
+                if key['status']=="Disqualified":
+                    status="DQ"
+                elif flag==0:
+                    status=key['status']
+                elif flag==1:
+                    status="DNF"
+
+                print("{:<8} {:<8} {:<20} {:<10} {:<15} {:<10}".format(key['position'],key['number'],key['Driver']['givenName']+" " +key['Driver']['familyName'],key['laps'],status,key['points'] ))
+
+
 
     def diver_standing(self,year):
         url = "http://ergast.com/api/f1/{}/driverStandings.json".format(year)
@@ -116,9 +175,29 @@ class formula1:
     def team_champion_year(self,year):
         self.all_drivers_champions(year,year)
 
+    def qualifying_time(self,year,roun):
+        url = "http://ergast.com/api/f1/{}/{}/qualifying.json".format(year,roun)
+        response = requests.request("GET", url, headers=self.headers, data=self.payload)
+        db=eval(response.text)
+        db=db['MRData']['RaceTable']['Races'][0]
+        print("\t\t\t\tRound {} Formula 1 season {}".format(roun,year))
+        print("\t\t\t\t-------------------------------")
+        print("{} Qualifying Highlights at {}, {} {}".format(db['raceName'],db['Circuit']['circuitName'],db['Circuit']['Location']['locality'],db['Circuit']['Location']['country']))
+        #print("Date: {} Time: {}".format(db['date'],db['time']))
+        print("----------------------------------------------------------------------------------------------------------")
+        print ("{:<8} {:<25} {:<20} {:<20} {:<20} {:<20} ".format('Pos','Driver','Team','Q1','Q2','Q3'))
+        print ("{:<8} {:<25} {:<20} {:<20} {:<20} {:<20} ".format('---','------','----','--','--','--'))
+        for key in db['QualifyingResults']:
+            try:
+                print ("{:<8} {:<25} {:<20} {:<20} {:<20} {:<20} ".format(key['position'],key['Driver']['givenName']+ " "+key['Driver']['familyName'],key['Constructor']['name'],key['Q1'],key['Q2'],key['Q3']))
+            except:
+                try:
+                    print ("{:<8} {:<25} {:<20} {:<20} {:<20} {:<20} ".format(key['position'],key['Driver']['givenName']+ " "+key['Driver']['familyName'],key['Constructor']['name'],key['Q1'],key['Q2'],"--------"))
+                except:
+                    print ("{:<8} {:<25} {:<20} {:<20} {:<20} {:<20} ".format(key['position'],key['Driver']['givenName']+ " "+key['Driver']['familyName'],key['Constructor']['name'],key['Q1'],"--------","--------"))
 
 f=formula1()
-f.team_champion_year(2010)
+f.race_result(2021,11)
 
 
         
