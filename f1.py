@@ -29,7 +29,6 @@ class formula1:
     def last_result(self):
         url = "http://ergast.com/api/f1/current/last/results.json"
         response = requests.request("GET", url, headers=self.headers, data=self.payload)
-        response2 = requests.request("GET", url2, headers=self.headers, data=self.payload)
         db = eval(response.text)
         db=db['MRData']['RaceTable']['Races'][0]
         url2 = "http://ergast.com/api/f1/{}/{}/status.json".format(db['season'],db['round'])
